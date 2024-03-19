@@ -93,15 +93,37 @@ class App {
   }
 
   /** Place a sunflower when the screen is tapped. */
-  onSelect = () => {
-    if (window.sunflower) {
-      const clone = window.sunflower.clone();
-      clone.position.copy(this.reticle.position);
-      this.scene.add(clone)
+  // onSelect = () => {
+  //   if (window.sunflower) {
+  //     const clone = window.sunflower.clone();
+  //     clone.position.copy(this.reticle.position);
+  //     this.scene.add(clone)
 
-      const shadowMesh = this.scene.children.find(c => c.name === 'shadowMesh');
-      shadowMesh.position.y = clone.position.y;
-    }
+  //     const shadowMesh = this.scene.children.find(c => c.name === 'shadowMesh');
+  //     shadowMesh.position.y = clone.position.y;
+  //   }
+  // }
+
+  // for the cube
+  onSelect = () =>{
+    const geo = new THREE.BoxGeometry(0.1,0.1,0.1);
+    const mats = [    
+    new THREE.MeshStandardMaterial({ color: 0xff0000 }),
+    new THREE.MeshStandardMaterial({ color: 0x00ff00 }),
+    new THREE.MeshStandardMaterial({ color: 0x0000ff }),
+    new THREE.MeshStandardMaterial({ color: 0xffff00 }), 
+    new THREE.MeshStandardMaterial({ color: 0xff00ff }), 
+    new THREE.MeshStandardMaterial({ color: 0x00ffff })  
+    ]
+    const cube = new THREE.Mesh(geo,mats);
+    cube.position.copy(this.reticle.position);
+
+    this.scene.add(cube);
+    
+    const shadowMesh = this.scene.children.find(c => c.name === 'shadowMesh');
+    shadowMesh.position.y = clone.position.y;
+
+    
   }
 
   /**
