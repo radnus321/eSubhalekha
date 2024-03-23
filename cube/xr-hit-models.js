@@ -22,9 +22,12 @@ const sizes = {
   height: window.innerHeight
 }
 
-const light = new THREE.AmbientLight(0xffffff, 1)
+const light = new THREE.AmbientLight(0xffffff, 10)
 scene.add(light)
 
+const directionalLight = new THREE.DirectionalLight(0xff0000, 5);
+directionalLight.position.set(0,3,0);
+scene.add(directionalLight)
 
 let reticle = new THREE.Mesh(
   new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
@@ -76,7 +79,7 @@ function onSelect(){
     model.position.y = 1;
     scene.add(model)
     model.lookAt(camera.position);
-    model.rotateX(Math.PI/2)
+    model.rotateX(Math.PI/3)
   }
 }
 
