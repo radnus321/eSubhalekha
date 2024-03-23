@@ -11,7 +11,7 @@ let gltfLoader = new GLTFLoader();
 gltfLoader.load('/models/color-holi.glb', (gltf)=>{ 
   loadedModel = gltf.scene
   loadedModel.scale.set(0.5,0.5,0.5)
-  loadedModel.rotateX(Math.PI/2)
+  // loadedModel.rotateZ(Math.PI/2)
 })
 
 
@@ -76,6 +76,7 @@ function onSelect(){
     model.position.y = 1;
     scene.add(model)
     model.lookAt(camera.position);
+    model.rotateX(Math.PI/2)
   }
 }
 
