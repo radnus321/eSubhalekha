@@ -8,7 +8,7 @@ let hitTestSource = null;
 let hitTestSourceRequested = false;
 
 let gltfLoader = new GLTFLoader();
-gltfLoader.load('/models/untitled.glb', (gltf)=>{ 
+gltfLoader.load('/models/color-holi.glb', (gltf)=>{ 
   loadedModel = gltf.scene
   loadedModel.scale.set(0.5,0.5,0.5)
   loadedModel.rotateX(Math.PI/2)
@@ -75,6 +75,7 @@ function onSelect(){
     model.name = "loadedModel"
     model.position.y = 1;
     scene.add(model)
+    model.lookAt(camera.position);
   }
 }
 
@@ -109,30 +110,10 @@ function render(timestamp, frame){
         reticle.visible = false;
       }
     }
-    let reticleScale = 1;
-    let isIncreasing = true;
-
-    if(reticle.visible){
-      if(isIncreasing){
-        reticleScale += 0.1
-        if(reticleScale >= 1.5){
-          isIncreasing = false;
-        }
-      }else{
-        reticleScale -= 0.1
-        if(reticleScale <= 1){
-          isIncreasing = true;
-        }
-      }
-      console.log(reticleScale);
-      reticle.scale.set(reticleScale,reticleScale,reticleScale);
-    }
   }
-  // console.log(scene.children);
   
   scene.children.forEach(object=>{
     if(object.name === "loadedModel"){
-      // object.rotation.z += 0.1;
       if(object.position.y > -1){
         object.position.y -= 0.1;
       }else{
