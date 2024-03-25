@@ -22,7 +22,7 @@ const sizes = {
   height: window.innerHeight
 }
 
-const light = new THREE.AmbientLight(0xffffff, 10)
+const light = new THREE.AmbientLight(0xffffff, 1.5)
 scene.add(light)
 
 const directionalLight = new THREE.DirectionalLight(0xff0000, 5);
