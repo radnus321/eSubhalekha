@@ -4,16 +4,29 @@ import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
 
 
 let loadedModel = null;
+let loadedModel2 = null;
 let hitTestSource = null;
 let hitTestSourceRequested = false;
+let hitPosition = new THREE.Vector3();
 
-let gltfLoader = new GLTFLoader();
-gltfLoader.load('/models/color-holi.glb', (gltf)=>{ 
-  loadedModel = gltf.scene
-  loadedModel.scale.set(0.5,0.5,0.5)
-  // loadedModel.rotateZ(Math.PI/2)
+
+let gltfLoader2 = new GLTFLoader();
+gltfLoader2.load('/models/color-holi.glb', (gltf)=>{ 
+  loadedModel2 = gltf.scene
+  loadedModel2.scale.set(0.5,0.5,0.5)
+  loadedModel2.position.set(-1.5,-1,-1)
+  loadedModel2.rotateX(Math.PI/2)
+  scene.add(loadedModel2)
 })
 
+
+let gltfLoader = new GLTFLoader();
+gltfLoader.load('/models/confetti.glb', (gltf)=>{ 
+  loadedModel = gltf.scene
+  loadedModel.scale.set(5,5,5)
+  loadedModel.position.set(0,10,0)
+  // loadedModel.rotateZ(Math.PI/2)
+})
 
 const scene  = new THREE.Scene();
 
@@ -27,6 +40,7 @@ scene.add(light)
 
 const directionalLight = new THREE.DirectionalLight(0xff0000, 5);
 directionalLight.position.set(0,3,0);
+directionalLight.castShadow = true;
 scene.add(directionalLight)
 
 let reticle = new THREE.Mesh(
@@ -40,14 +54,14 @@ reticle.matrixAutoUpdate = false;
 scene.add(reticle)
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height,0.1, 1000)
-camera.position.set(0,2,5)
-camera.lookAt(new THREE.Vector3(0,0,0))
+camera.position.set(0,0,5)
 scene.add(camera);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
-  alpha: true
+  alpha: true,
 })
+
 
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(window.devicePixelRatio)
@@ -65,26 +79,32 @@ button.style.color = 'black';
 button.style.animation = 'pulse 2s infinite';
 document.body.appendChild(button);
 
-
-
 let controller = renderer.xr.getController(0);
-controller.addEventListener('select', onSelect)
+controller.addEventListener('selectstart',onSelect)
 scene.add(controller)
 
 function onSelect(){
   if(reticle.visible && loadedModel){
     const model = loadedModel.clone();
-    model.position.setFromMatrixPosition(reticle.matrix)
+    // model.position.setFromMatrixPosition(hitPosition.matrix)
+    model.position.copy(hitPosition)
+    model.position.y += 2;
+    model.position.x += 1;
+    model.position.multiplyScalar(40)
     model.name = "loadedModel"
-    model.position.y = 1;
+    console.log(hitPosition)
+    console.log(model.position)
+    // model.position.x += 10;
+    model.position.z += -35
+    // model.position.y = 0;
     scene.add(model)
     model.lookAt(camera.position);
-    model.rotateX(Math.PI/3)
+    model.rotateX(Math.PI/2 + Math.PI/6)
+    
   }
 }
 
 renderer.setAnimationLoop(render)
-
 
 function render(timestamp, frame){
   if(frame){
@@ -110,18 +130,22 @@ function render(timestamp, frame){
         const hit = hitTestResults[0]
         reticle.visible = true;
         reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix)
+        const hitMatrix = new THREE.Matrix4().fromArray(hit.getPose(referenceSpace).transform.matrix);
+        hitPosition = new THREE.Vector3();
+        hitPosition.setFromMatrixPosition(hitMatrix);
       }else{
         reticle.visible = false;
       }
     }
   }
-  
+
   scene.children.forEach(object=>{
     if(object.name === "loadedModel"){
-      if(object.position.y > -1){
-        object.position.y -= 0.1;
+      if(object.position.y > -40){
+        object.position.y -= 5;
       }else{
-        object.position.y = -1;  
+        object.position.y = -40;
+        scene.remove(object)
       }
     }
   })
