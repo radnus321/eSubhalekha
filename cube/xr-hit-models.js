@@ -10,14 +10,17 @@ let hitTestSourceRequested = false;
 let hitPosition = new THREE.Vector3();
 
 
-let gltfLoader2 = new GLTFLoader();
-gltfLoader2.load('/models/color-holi.glb', (gltf)=>{ 
-  loadedModel2 = gltf.scene
-  loadedModel2.scale.set(0.5,0.5,0.5)
-  loadedModel2.position.set(-1.5,-1,-1)
-  loadedModel2.rotateX(Math.PI/2)
-  scene.add(loadedModel2)
-})
+const loadMainModel = () =>{
+  let gltfLoader2 = new GLTFLoader();
+  gltfLoader2.load('/models/color-holi.glb', (gltf)=>{ 
+    loadedModel2 = gltf.scene
+    loadedModel2.scale.set(0.5,0.5,0.5)
+    loadedModel2.position.set(-1.5,-1,-1)
+    loadedModel2.rotateX(Math.PI/2)
+    scene.add(loadedModel2)
+  })
+}
+
 
 
 let gltfLoader = new GLTFLoader();
@@ -25,7 +28,6 @@ gltfLoader.load('/models/confetti.glb', (gltf)=>{
   loadedModel = gltf.scene
   loadedModel.scale.set(5,5,5)
   loadedModel.position.set(0,10,0)
-  // loadedModel.rotateZ(Math.PI/2)
 })
 
 const scene  = new THREE.Scene();
@@ -79,6 +81,10 @@ button.style.color = 'black';
 button.style.animation = 'pulse 2s infinite';
 document.body.appendChild(button);
 
+button.addEventListener('click',()=>{
+  loadMainModel();
+})
+
 let controller = renderer.xr.getController(0);
 controller.addEventListener('selectstart',onSelect)
 scene.add(controller)
@@ -94,15 +100,14 @@ function onSelect(){
     model.name = "loadedModel"
     console.log(hitPosition)
     console.log(model.position)
-    // model.position.x += 10;
     model.position.z += -35
-    // model.position.y = 0;
     scene.add(model)
     model.lookAt(camera.position);
     model.rotateX(Math.PI/2 + Math.PI/6)
     
   }
 }
+
 
 renderer.setAnimationLoop(render)
 
