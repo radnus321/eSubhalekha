@@ -12,16 +12,16 @@ let hitPosition = new THREE.Vector3();
 
 const loadMainModel = () =>{
   let gltfLoader2 = new GLTFLoader();
-  gltfLoader2.load('/models/color-holi.glb', (gltf)=>{ 
+  gltfLoader2.load('/models/envelope.glb', (gltf)=>{ 
     loadedModel2 = gltf.scene
     loadedModel2.scale.set(0.5,0.5,0.5)
     loadedModel2.position.set(-1.5,-1,-1)
     loadedModel2.rotateX(Math.PI/2)
     scene.add(loadedModel2)
+    loadedModel2.name = "envelope"
+    console.log(scene.children)
   })
 }
-
-
 
 let gltfLoader = new GLTFLoader();
 gltfLoader.load('/models/confetti.glb', (gltf)=>{ 
