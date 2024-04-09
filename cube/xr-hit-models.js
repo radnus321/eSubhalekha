@@ -14,12 +14,16 @@ const loadMainModel = () =>{
   let gltfLoader2 = new GLTFLoader();
   gltfLoader2.load('/models/envelope.glb', (gltf)=>{ 
     loadedModel2 = gltf.scene
-    loadedModel2.scale.set(0.5,0.5,0.5)
-    loadedModel2.position.set(-1.5,-1,-1)
-    loadedModel2.rotateX(Math.PI/2)
+    loadedModel2.scale.set(5,5,5)
+    loadedModel2.position.set(-140,-50,160)
     scene.add(loadedModel2)
     loadedModel2.name = "envelope"
     console.log(scene.children)
+    let mixer = new THREE.AnimationMixer(loadedModel2);
+    gltf.animations.forEach((clip)=>{
+      mixer.clipAction(clip).play();
+    })
+    scene.add(gltf.scene)
   })
 }
 
