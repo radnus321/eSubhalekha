@@ -10,17 +10,20 @@ let hitTestSourceRequested = false;
 let hitPosition = new THREE.Vector3();
 
 let mixer;
-const loadMainModel = async () =>{
+const loadMainModel = () =>{
   let gltfLoader2 = new GLTFLoader();
-  await gltfLoader2.load('/models/envelope.glb', (gltf)=>{ 
+  gltfLoader2.load('/models/envelope.glb', (gltf)=>{ 
     loadedModel2 = gltf.scene
-    loadedModel2.scale.set(5,5,5)
-    loadedModel2.position.set(-0,0,-70)
+    loadedModel2.scale.set(0.3,0.3,0.3)
+    loadedModel2.position.set(0,0,-2)
     scene.add(loadedModel2)
     loadedModel2.name = "envelope"
     console.log(scene.children)
     mixer = new THREE.AnimationMixer(loadedModel2);
     gltf.animations.forEach((clip)=>{
+      let actions = mixer.clipAction(clip)
+      actions.setLoop(THREE.LoopOnce)
+      actions.clampWhenFinished = true;
       mixer.clipAction(clip).play();
     })
   })
@@ -29,15 +32,14 @@ const loadMainModel = async () =>{
 
 async function animate(once){
   requestAnimationFrame(animate)
-  mixer.update(0.05)
-  console.log(mixer)
+  if(mixer) mixer.update(0.05)
   renderer.render(scene,camera);
 }
 
 let gltfLoader = new GLTFLoader();
 gltfLoader.load('/models/confetti.glb', (gltf)=>{ 
   loadedModel = gltf.scene
-  loadedModel.scale.set(5,5,5)
+  // loadedModel.scale.set(0.1,0.1,0.1)
   loadedModel.position.set(0,10,0)
 })
 
@@ -48,13 +50,13 @@ const sizes = {
   height: window.innerHeight
 }
 
-const light = new THREE.AmbientLight(0xffffff, 1.5)
+const light = new THREE.AmbientLight(0xffffff, 5)
 scene.add(light)
+const pointLight = new THREE.PointLight(0xffffff, 1000);
+pointLight.position.set(5,5,5)
+pointLight.lookAt(0,0,-2)
+scene.add(pointLight)
 
-const directionalLight = new THREE.DirectionalLight(0xff0000, 5);
-directionalLight.position.set(0,3,0);
-directionalLight.castShadow = true;
-scene.add(directionalLight)
 
 let reticle = new THREE.Mesh(
   new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
