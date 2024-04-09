@@ -8,6 +8,9 @@ let hitTestSourceRequested = false;
 let hitPosition = new THREE.Vector3();
 
 let mixer;
+let animationPaused = false;
+let pauseTimeout;
+
 const loadMainModel = () => {
   const gltfLoader2 = new GLTFLoader();
   gltfLoader2.load('/models/envelope.glb', (gltf) => {
@@ -18,13 +21,40 @@ const loadMainModel = () => {
     loadedModel.name = "envelope";
     mixer = new THREE.AnimationMixer(loadedModel);
     gltf.animations.forEach((clip) => {
-      const actions = mixer.clipAction(clip);
-      actions.setLoop(THREE.LoopOnce);
-      actions.clampWhenFinished = true;
-      mixer.clipAction(clip).play();
+      const action = mixer.clipAction(clip);
+      action.setLoop(THREE.LoopOnce);
+      // action.setEffectiveTimeScale(3);
+      action.clampWhenFinished = true;
+      action.play();
+
+      pauseTimeout = setTimeout(() => {
+        pauseAnimation();
+      }, 800);
     });
   });
 };
+
+const pauseAnimation = () => {
+  if (!animationPaused) {
+    mixer.timeScale = 0;
+    animationPaused = true;
+  }
+};
+
+const unpauseAnimation = () => {
+  if (animationPaused) {
+    document.addEventListener('click',()=>{
+      console.log("click was registered")
+      mixer.timeScale = 1;
+      animationPaused = false;
+      clearTimeout(pauseTimeout);
+    })
+  }
+};
+
+setTimeout(()=>{
+  unpauseAnimation();
+},5000)
 
 async function animate() {
   requestAnimationFrame(animate);
@@ -80,10 +110,8 @@ button.style.animation = 'pulse 2s infinite';
 document.body.appendChild(button);
 
 button.addEventListener('click', () => {
-  loadMainModel();
-  setTimeout(() => {
-    animate();
-  }, 2000);
+  loadMainModel();  
+  animate();
 });
 
 let controller = renderer.xr.getController(0);
@@ -92,16 +120,7 @@ scene.add(controller);
 
 function onSelect() {
   if (reticle.visible && loadedModel) {
-    const model = loadedModel.clone();
-    model.position.copy(hitPosition);
-    model.position.y += 2;
-    model.position.x += 1;
-    model.position.multiplyScalar(40);
-    model.name = "loadedModel";
-    model.position.z -= 35;
-    scene.add(model);
-    model.lookAt(camera.position);
-    model.rotateX(Math.PI / 2 + Math.PI / 6);
+    console.log("on select");
   }
 }
 
@@ -137,17 +156,6 @@ function render(timestamp, frame) {
       }
     }
   }
-
-  scene.children.forEach((object) => {
-    if (object.name === "loadedModel") {
-      if (object.position.y > -40) {
-        object.position.y -= 5;
-      } else {
-        object.position.y = -40;
-        scene.remove(object);
-      }
-    }
-  });
   renderer.render(scene, camera);
 }
 
