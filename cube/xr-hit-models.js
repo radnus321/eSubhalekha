@@ -9,22 +9,29 @@ let hitTestSource = null;
 let hitTestSourceRequested = false;
 let hitPosition = new THREE.Vector3();
 
-
-const loadMainModel = () =>{
+let mixer;
+const loadMainModel = async () =>{
   let gltfLoader2 = new GLTFLoader();
-  gltfLoader2.load('/models/envelope.glb', (gltf)=>{ 
+  await gltfLoader2.load('/models/envelope.glb', (gltf)=>{ 
     loadedModel2 = gltf.scene
     loadedModel2.scale.set(5,5,5)
-    loadedModel2.position.set(-140,-50,160)
+    loadedModel2.position.set(-0,0,-70)
     scene.add(loadedModel2)
     loadedModel2.name = "envelope"
     console.log(scene.children)
-    let mixer = new THREE.AnimationMixer(loadedModel2);
+    mixer = new THREE.AnimationMixer(loadedModel2);
     gltf.animations.forEach((clip)=>{
       mixer.clipAction(clip).play();
     })
-    scene.add(gltf.scene)
   })
+}
+
+
+async function animate(once){
+  requestAnimationFrame(animate)
+  mixer.update(0.05)
+  console.log(mixer)
+  renderer.render(scene,camera);
 }
 
 let gltfLoader = new GLTFLoader();
@@ -87,6 +94,8 @@ document.body.appendChild(button);
 
 button.addEventListener('click',()=>{
   loadMainModel();
+  const once = false;
+  animate(once)
 })
 
 let controller = renderer.xr.getController(0);
@@ -96,7 +105,6 @@ scene.add(controller)
 function onSelect(){
   if(reticle.visible && loadedModel){
     const model = loadedModel.clone();
-    // model.position.setFromMatrixPosition(hitPosition.matrix)
     model.position.copy(hitPosition)
     model.position.y += 2;
     model.position.x += 1;
