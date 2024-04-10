@@ -13,23 +13,23 @@ let pauseTimeout;
 
 const loadMainModel = () => {
   const gltfLoader2 = new GLTFLoader();
-  gltfLoader2.load('/models/envelope.glb', (gltf) => {
+  gltfLoader2.load('/models/envelope-3.glb', (gltf) => {
     loadedModel = gltf.scene;
-    loadedModel.scale.set(0.3, 0.3, 0.3);
-    loadedModel.position.set(0, 0, -2);
+    loadedModel.scale.set(0.01, 0.01, 0.01);
+    loadedModel.position.set(0, 0, -0.1);
     scene.add(loadedModel);
     loadedModel.name = "envelope";
     mixer = new THREE.AnimationMixer(loadedModel);
     gltf.animations.forEach((clip) => {
       const action = mixer.clipAction(clip);
       action.setLoop(THREE.LoopOnce);
-      // action.setEffectiveTimeScale(3);
+      action.setEffectiveTimeScale(0.3);
       action.clampWhenFinished = true;
       action.play();
 
       pauseTimeout = setTimeout(() => {
         pauseAnimation();
-      }, 800);
+      }, 2300);
     });
   });
 };
@@ -42,8 +42,9 @@ const pauseAnimation = () => {
 };
 
 const unpauseAnimation = () => {
+  console.log("unpausing animation")
   if (animationPaused) {
-    document.addEventListener('click',()=>{
+    openEnvelopeBtn.addEventListener('click',()=>{
       console.log("click was registered")
       mixer.timeScale = 1;
       animationPaused = false;
@@ -52,16 +53,14 @@ const unpauseAnimation = () => {
   }
 };
 
-setTimeout(()=>{
   unpauseAnimation();
-},5000)
 
 async function animate() {
   requestAnimationFrame(animate);
   if (mixer) mixer.update(0.05);
   renderer.render(scene, camera);
 }
-
+let openEnvelopeBtn = null; 
 const scene = new THREE.Scene();
 
 const sizes = {
@@ -71,7 +70,7 @@ const sizes = {
 
 const light = new THREE.AmbientLight(0xffffff, 5);
 scene.add(light);
-const pointLight = new THREE.PointLight(0xffffff, 1000);
+const pointLight = new THREE.PointLight(0xffffff, 1.5);
 pointLight.position.set(5, 5, 5);
 pointLight.lookAt(0, 0, -2);
 scene.add(pointLight);
@@ -99,7 +98,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.xr.enabled = true;
 
 document.body.appendChild(renderer.domElement);
-const button = ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] });
+const button = ARButton.createButton(renderer, { requiredFeatures: ['hit-test'], optionalFeatures: ['dom-overlay'], domOverlay:{root:document.getElementById('overlay-content'),visible:true}});
 button.style.backgroundColor = "#f0d637";
 button.style.borderRadius = '20px';
 button.style.fontWeight = 'bold';
@@ -110,8 +109,12 @@ button.style.animation = 'pulse 2s infinite';
 document.body.appendChild(button);
 
 button.addEventListener('click', () => {
-  loadMainModel();  
-  animate();
+  loadMainModel();
+  document.querySelector('.overlay-container').innerHTML = '<button id="open-envelope" class="open-envelope">Open Envelope</button>'
+  openEnvelopeBtn = document.getElementById('open-envelope');
+  console.log(openEnvelopeBtn);
+    animate();
+
 });
 
 let controller = renderer.xr.getController(0);

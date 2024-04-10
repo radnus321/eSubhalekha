@@ -89,6 +89,26 @@
            font-weight:900;
            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
        }
+.overlay-container {
+    position: fixed;
+    bottom: 20px; /* Adjust this value as needed */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.open-envelope {
+    font-family: 'Comic Sans MS', cursive;
+    background-color: #f0d637;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
    </style>
 </head>
 <body>
@@ -98,5 +118,9 @@
        <h1 style="font-family: 'Comic Sans MS', cursive;">Welcome to your personal invitation</h1>
    </div>
    <script type="module" src="scripts.js"></script>
+   <div class="overlay-content" id="overlay-content">
+    <div class="overlay-container">
+    </div>
+   </div>
 </body>
 </html> 
