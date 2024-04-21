@@ -11,6 +11,7 @@ let hitPosition = new THREE.Vector3();
 let mixer;
 let animationPaused = false;
 let pauseTimeout;
+let unPauseButton = null;
 
 const loadMainModel = () => {
   const dracoLoader = new DRACOLoader();
@@ -36,6 +37,8 @@ const loadMainModel = () => {
         pauseAnimation();
       }, 6100);
       setTimeout(() => {
+        document.getElementById('overlay-content').style.display = 'block';
+        document.getElementById('overlay-content').innerHTML = '<button>OpenChest</button>';
         unpauseAnimation();
       }, 6100);
     });
@@ -53,7 +56,14 @@ const unpauseAnimation = () => {
   console.log(animationPaused)
   if (animationPaused) {
     console.log("unpausing animation")
-    document.addEventListener('click',()=>{
+    unPauseButton = document.getElementById('overlay-content').querySelector('button');
+    unPauseButton.style.backgroundColor = "#f0d637";
+    unPauseButton.style.borderRadius = '20px';
+    unPauseButton.style.fontWeight = 'bold';
+    unPauseButton.style.fontSize = '20px';
+    unPauseButton.style.fontFamily = 'Comic Sans MS, cursive';
+    console.log(unPauseButton)
+    unPauseButton.addEventListener('click',()=>{
       console.log("click was registered") 
       mixer.timeScale = 1;
       animationPaused = false;
@@ -105,7 +115,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.xr.enabled = true;
 
 document.body.appendChild(renderer.domElement);
-const button = ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] });
+const button = ARButton.createButton(renderer, { requiredFeatures: ['hit-test'], optionalFeatures: ['dom-overlay'], domOverlay: { root: document.getElementById('overlay-content'),visible:true } });
 button.style.backgroundColor = "#f0d637";
 button.style.borderRadius = '20px';
 button.style.fontWeight = 'bold';
