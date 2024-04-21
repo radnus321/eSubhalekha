@@ -12,6 +12,19 @@ let mixer;
 let animationPaused = false;
 let pauseTimeout;
 let unPauseButton = null;
+let closeButton = null;
+const overlayContainer = document.getElementById('overlay-content');
+
+function toggleOverlayVisibility() {
+  if (renderer.xr.getSession()) {
+    overlayContainer.style.display = 'block'; // Show overlay in AR mode
+  } else {
+    overlayContainer.style.display = 'none'; // Hide overlay when AR ends
+  }
+}
+
+
+
 
 const loadMainModel = () => {
   const dracoLoader = new DRACOLoader();
@@ -38,7 +51,7 @@ const loadMainModel = () => {
       }, 6100);
       setTimeout(() => {
         document.getElementById('overlay-content').style.display = 'block';
-        document.getElementById('overlay-content').innerHTML = '<button>OpenChest</button>';
+        document.getElementById('overlay-content').insertAdjacentHTML('beforeend', '<button class="open-chest-button">OpenChest</button>');
         unpauseAnimation();
       }, 6100);
     });
@@ -56,7 +69,7 @@ const unpauseAnimation = () => {
   console.log(animationPaused)
   if (animationPaused) {
     console.log("unpausing animation")
-    unPauseButton = document.getElementById('overlay-content').querySelector('button');
+    unPauseButton = document.getElementById('overlay-content').querySelector('.open-chest-button');
     unPauseButton.style.backgroundColor = "#f0d637";
     unPauseButton.style.borderRadius = '20px';
     unPauseButton.style.fontWeight = 'bold';
@@ -128,7 +141,19 @@ document.body.appendChild(button);
 button.addEventListener('click', () => {
   loadMainModel();  
   animate();
+  // Handle close button click event
+closeButton = document.querySelector('.close-button');
+closeButton.addEventListener('click', () => {
+  if (renderer.xr.getSession()) {
+    renderer.xr.getSession().end();
+  }
 });
+});
+
+
+toggleOverlayVisibility();
+renderer.xr.addEventListener('sessionstart', toggleOverlayVisibility);
+renderer.xr.addEventListener('sessionend', toggleOverlayVisibility);
 
 let controller = renderer.xr.getController(0);
 controller.addEventListener('selectstart', onSelect);
