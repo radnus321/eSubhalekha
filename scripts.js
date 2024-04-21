@@ -32,9 +32,12 @@ const loadMainModel = () => {
       action.clampWhenFinished = true;
       action.play();
 
-      // pauseTimeout = setTimeout(() => {
-      //   pauseAnimation();
-      // }, 1400);
+      setTimeout(() => {
+        pauseAnimation();
+      }, 6100);
+      setTimeout(() => {
+        unpauseAnimation();
+      }, 6100);
     });
   });
 };
@@ -47,19 +50,17 @@ const pauseAnimation = () => {
 };
 
 const unpauseAnimation = () => {
+  console.log(animationPaused)
   if (animationPaused) {
+    console.log("unpausing animation")
     document.addEventListener('click',()=>{
-      console.log("click was registered")
+      console.log("click was registered") 
       mixer.timeScale = 1;
       animationPaused = false;
       clearTimeout(pauseTimeout);
     })
   }
 };
-
-setTimeout(()=>{
-  unpauseAnimation();
-},5000)
 
 async function animate() {
   requestAnimationFrame(animate);
