@@ -44,6 +44,7 @@ const loadMainModel = () => {
     })
   })
   gltfLoader.load('/models/chest-2.glb', (gltf) => {
+    document.body.classList.add('ar')
     loadedModel = gltf.scene;
     loadedModel.scale.set(0.3, 0.3, 0.3);
     loadedModel.rotation.set(0, Math.PI, 0);
@@ -51,6 +52,8 @@ const loadMainModel = () => {
     loadedModel.castShadow = true;
     loadedModel.receiveShadow = true;
     scene.add(loadedModel);
+    document.body.classList.add('stabilized')
+    document.body.classList.remove('ar')
     loadedModel.name = "chest";
     mixer = new THREE.AnimationMixer(loadedModel);
     gltf.animations.forEach((clip) => {
@@ -64,8 +67,7 @@ const loadMainModel = () => {
         pauseAnimation();
       }, 6100);
       setTimeout(() => {
-        document.getElementById('overlay-content').style.display = 'block';
-        document.getElementById('overlay-content').insertAdjacentHTML('beforeend', '<button class="open-chest-button">OpenChest</button>');
+        document.querySelector('.overlay-container').innerHTML = `<button class="open-chest-button">OpenChest</button>`
         unpauseAnimation();
       }, 6100);
     });
@@ -84,16 +86,19 @@ const unpauseAnimation = () => {
   if (animationPaused) {
     console.log("unpausing animation")
     unPauseButton = document.getElementById('overlay-content').querySelector('.open-chest-button');
+    unPauseButton.top = "500px"
     unPauseButton.style.backgroundColor = "#f0d637";
     unPauseButton.style.borderRadius = '20px';
     unPauseButton.style.fontWeight = 'bold';
     unPauseButton.style.fontSize = '20px';
     unPauseButton.style.fontFamily = 'Comic Sans MS, cursive';
+    unPauseButton.animation = 'pulse 2s infinite';  
     console.log(unPauseButton)
     unPauseButton.addEventListener('click',()=>{
       console.log("click was registered") 
       mixer.timeScale = 1;
       animationPaused = false;
+      unPauseButton.remove();
       clearTimeout(pauseTimeout);
     })
   }
@@ -113,9 +118,9 @@ const sizes = {
   height: window.innerHeight
 };
 
-const light = new THREE.AmbientLight(0xffffff, 5);
+const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
-const pointLight = new THREE.PointLight(0xffffff, 1);
+const pointLight = new THREE.PointLight(0xffffff, 1000);
 pointLight.position.set(5, 5, 5);
 pointLight.lookAt(0, 0, -2);
 pointLight.castShadow = true;
