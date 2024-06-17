@@ -43,11 +43,11 @@ const loadMainModel = () => {
       action.play();     
     })
   })
-  gltfLoader.load('/models/chest-2.glb', (gltf) => {
+  gltfLoader.load('/models/chest-3.glb', (gltf) => {
     document.body.classList.add('ar')
     loadedModel = gltf.scene;
     loadedModel.scale.set(0.3, 0.3, 0.3);
-    loadedModel.rotation.set(0, Math.PI, 0);
+    loadedModel.rotation.set(0, 0, 0);
     loadedModel.position.set(0, -2, -3);
     loadedModel.castShadow = true;
     loadedModel.receiveShadow = true;
