@@ -2,19 +2,18 @@ import * as THREE from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { gsap } from 'gsap';
 
 let loadedModel = null;
 let bfly = null;
-// let hitTestSource = null;
-// let hitTestSourceRequested = false;
-// let hitPosition = new THREE.Vector3();
-
+let mixerMap = new Map();
 let mixer, mixer2;
 let animationPaused = false;
 let pauseTimeout;
 let unPauseButton = null;
 let closeButton = null;
 const overlayContainer = document.getElementById('overlay-content');
+let currentFrame = 0;
 
 function toggleOverlayVisibility() {
   if (renderer.xr.getSession()) {
@@ -24,92 +23,123 @@ function toggleOverlayVisibility() {
   }
 }
 
-const loadMainModel = () => {
+const loadModels = () => {
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('/draco/');
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader);
   const bflyLoader = new GLTFLoader()
   bflyLoader.setDRACOLoader(dracoLoader)
-  bflyLoader.load('/models/butterflies.glb',(gltf)=>{
-    bfly = gltf.scene;
-    bfly.scale.set(0.3, 0.3, 0.3);
-    bfly.rotation.set(0, Math.PI, 0);
-    bfly.position.set(0, -2, -3);
-    scene.add(bfly);
-    mixer2 = new THREE.AnimationMixer(bfly);
-    gltf.animations.forEach((clip)=>{
-      const action = mixer2.clipAction(clip) 
-      action.play();     
-    })
-  })
-  gltfLoader.load('/models/chest-3.glb', (gltf) => {
-    document.body.classList.add('ar')
-    loadedModel = gltf.scene;
-    loadedModel.scale.set(0.3, 0.3, 0.3);
-    loadedModel.rotation.set(0, 0, 0);
-    loadedModel.position.set(0, -2, -3);
-    loadedModel.castShadow = true;
-    loadedModel.receiveShadow = true;
-    scene.add(loadedModel);
-    document.body.classList.add('stabilized')
-    document.body.classList.remove('ar')
-    loadedModel.name = "chest";
-    mixer = new THREE.AnimationMixer(loadedModel);
-    gltf.animations.forEach((clip) => {
-      const action = mixer.clipAction(clip);
-      action.setLoop(THREE.LoopOnce);
-      action.setEffectiveTimeScale(0.5);
-      action.clampWhenFinished = true;
-      action.play();
-
-      setTimeout(() => {
-        pauseAnimation();
-      }, 6100);
-      setTimeout(() => {
-        document.querySelector('.overlay-container').innerHTML = `<button class="open-chest-button">OpenChest</button>`
-        unpauseAnimation();
-      }, 6100);
+  
+  let isLoaded = false;
+  const loadModel = async () => {
+    return new Promise((resolve, reject) => {
+      bflyLoader.load('/models/butterflies.glb',(gltf)=>{
+        bfly = gltf.scene;
+        bfly.scale.set(0.3, 0.3, 0.3);
+        bfly.rotation.set(0, Math.PI, 0);
+        bfly.position.set(0, -2, -3);
+        scene.add(bfly);
+        mixer2 = new THREE.AnimationMixer(bfly);
+        mixerMap.set(mixer2, true);
+        gltf.animations.forEach((clip)=>{
+          const action = mixer2.clipAction(clip) 
+          action.play();     
+        });
+        isLoaded = true;
+        resolve();
+      });
     });
-  });
+  };
+  
+  const loadChest = async () => {
+    return new Promise((resolve, reject) => {
+      gltfLoader.load('/models/chest-3.glb', (gltf) => {
+        document.body.classList.add('ar')
+        loadedModel = gltf.scene;
+        loadedModel.scale.set(0.2, 0.2, 0.2);
+        loadedModel.rotation.set(0, 0, 0);
+        loadedModel.position.set(0, -2, -2);
+        loadedModel.castShadow = true;
+        loadedModel.receiveShadow = true;
+        scene.add(loadedModel);
+        document.body.classList.add('stabilized')
+        document.body.classList.remove('ar')
+        loadedModel.name = "chest";
+        mixer = new THREE.AnimationMixer(loadedModel);
+        mixerMap.set(mixer, true);
+        gltf.animations.forEach((clip) => {
+          const action = mixer.clipAction(clip);
+          action.setLoop(THREE.LoopOnce);
+          action.setEffectiveTimeScale(0.5);
+          action.clampWhenFinished = true;
+          action.play();
+        });
+        isLoaded = true;
+        resolve();
+      });
+    });
+  };
+  
+  loadModel().then(() => loadChest().then(() => startAnimation()));
 };
 
-const pauseAnimation = () => {
-  if (!animationPaused) {
-    mixer.timeScale = 0;
-    animationPaused = true;
-  }
-};
+const startAnimation = () => {
+  animate();
+}
+
 
 const unpauseAnimation = () => {
-  console.log(animationPaused)
-  if (animationPaused) {
-    console.log("unpausing animation")
-    unPauseButton = document.getElementById('overlay-content').querySelector('.open-chest-button');
-    unPauseButton.top = "500px"
-    unPauseButton.style.backgroundColor = "#f0d637";
-    unPauseButton.style.borderRadius = '20px';
-    unPauseButton.style.fontWeight = 'bold';
-    unPauseButton.style.fontSize = '20px';
-    unPauseButton.style.fontFamily = 'Comic Sans MS, cursive';
-    unPauseButton.animation = 'pulse 2s infinite';  
-    console.log(unPauseButton)
-    unPauseButton.addEventListener('click',()=>{
-      console.log("click was registered") 
-      mixer.timeScale = 1;
-      animationPaused = false;
-      unPauseButton.remove();
-      clearTimeout(pauseTimeout);
-    })
-  }
+  console.log("unpausing animation");
+  const overlayContainer = document.getElementById('overlay-content');
+  const unPauseButton = document.createElement('button');
+  unPauseButton.textContent = 'Open Chest!';
+  unPauseButton.style.marginBottom = '80px';
+  unPauseButton.style.backgroundColor = '#f0d637';
+  unPauseButton.style.borderRadius = '20px';
+  unPauseButton.style.fontWeight = 'bold';
+  unPauseButton.style.fontSize = '25px';
+  unPauseButton.style.fontFamily = 'Comic Sans MS, cursive';
+  unPauseButton.style.animation = 'pulse 2s infinite';  
+
+  unPauseButton.addEventListener('click', () => {
+    console.log('Unpause button clicked');
+    mixer.timeScale = 1;
+    mixerMap.set(mixer, true);
+    unPauseButton.remove();
+  });
+
+  overlayContainer.appendChild(unPauseButton); // Add button to overlay container
 };
 
+
 async function animate() {
+  currentFrame++;
+  if(currentFrame === 150){
+    console.log("mixer is paused!")
+    mixerMap.set(mixer, false);
+    await unpauseAnimation();
+  }
+  if(mixer && mixerMap.get(mixer)) mixer.update(0.05);
+  if(mixer2 && mixerMap.get(mixer2)) mixer2.update(0.05);
+  // console.log("current frame is: "+currentFrame);
+  // console.log("current mixer is: "+mixer+" mixerMap is: "+mixerMap.get(mixer));
+  // console.log("current mixer2 is: "+mixer2+" mixerMap2 is: "+mixerMap.get(mixer2));
   requestAnimationFrame(animate);
-  if (mixer) mixer.update(0.05);
-  if(mixer2) mixer2.update(0.05)
-  renderer.render(scene, camera);
+  return currentFrame;
 }
+
+// async function AnimationController(){
+//   console.log('AnimationController function called');
+//   const currentFrame = await animate();
+//   console.log(currentFrame)
+//   if(currentFrame === 200){
+//     console.log("paused!")
+//     mixerMap.set(mixer, false);
+//     await unpauseAnimation();
+//   }
+// }
+
 
 const scene = new THREE.Scene();
 
@@ -133,10 +163,6 @@ let reticle = new THREE.Mesh(
   new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
   new THREE.MeshStandardMaterial({ color: 0xffffff * Math.random() })
 );
-// reticle.name = "reticle";
-// reticle.visible = false;
-// reticle.matrixAutoUpdate = false;
-// scene.add(reticle);
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
 camera.position.set(0, 0, 5);
@@ -166,16 +192,7 @@ button.style.animation = 'pulse 2s infinite';
 document.body.appendChild(button);
 
 button.addEventListener('click', () => {
-  loadMainModel(); 
-  const planeGeometry = new THREE.PlaneGeometry(100,100);
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, opacity: 0.1 });
-planeMaterial.colorWrite = false
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.position.set(0,-10,0)
-plane.rotation.x = -Math.PI / 2;
-plane.receiveShadow = true;
-scene.add(plane); 
-  animate();
+  loadModels(); 
 closeButton = document.querySelector('.close-button');
 closeButton.addEventListener('click', () => {
   if (renderer.xr.getSession()) {
@@ -188,7 +205,6 @@ closeButton.addEventListener('click', () => {
 toggleOverlayVisibility();
 renderer.xr.addEventListener('sessionstart', toggleOverlayVisibility);
 renderer.xr.addEventListener('sessionend', toggleOverlayVisibility);
-
 let controller = renderer.xr.getController(0);
 controller.addEventListener('selectstart', onSelect);
 scene.add(controller);
@@ -201,36 +217,7 @@ function onSelect() {
 
 renderer.setAnimationLoop(render);
 
-function render(timestamp, frame) {
-  // if (frame) {
-  //   const referenceSpace = renderer.xr.getReferenceSpace();
-  //   const session = renderer.xr.getSession();
-
-  //   if (hitTestSourceRequested === false) {
-  //     session.requestReferenceSpace('viewer').then((referenceSpace) => {
-  //       session.requestHitTestSource({ space: referenceSpace }).then((source) => hitTestSource = source);
-  //     });
-  //     hitTestSourceRequested = true;
-
-  //     session.addEventListener('end', () => {
-  //       hitTestSourceRequested = false;
-  //       hitTestSource = null;
-  //     });
-  //   }
-
-  //   if (hitTestSource) {
-  //     const hitTestResults = frame.getHitTestResults(hitTestSource);
-  //     if (hitTestResults.length) {
-  //       const hit = hitTestResults[0];
-  //       reticle.visible = true;
-  //       reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
-  //       const hitMatrix = new THREE.Matrix4().fromArray(hit.getPose(referenceSpace).transform.matrix);
-  //       hitPosition.setFromMatrixPosition(hitMatrix);
-  //     } else {
-  //       reticle.visible = false;
-  //     }
-  //   }
-  // }
+function render() {
   renderer.render(scene, camera);
 }
 
