@@ -109,9 +109,8 @@ const unpauseAnimation = () => {
     unPauseButton.remove();
   });
 
-  overlayContainer.appendChild(unPauseButton); // Add button to overlay container
+  overlayContainer.appendChild(unPauseButton);
 };
-
 
 async function animate() {
   currentFrame++;
@@ -122,24 +121,10 @@ async function animate() {
   }
   if(mixer && mixerMap.get(mixer)) mixer.update(0.05);
   if(mixer2 && mixerMap.get(mixer2)) mixer2.update(0.05);
-  // console.log("current frame is: "+currentFrame);
-  // console.log("current mixer is: "+mixer+" mixerMap is: "+mixerMap.get(mixer));
   // console.log("current mixer2 is: "+mixer2+" mixerMap2 is: "+mixerMap.get(mixer2));
   requestAnimationFrame(animate);
   return currentFrame;
 }
-
-// async function AnimationController(){
-//   console.log('AnimationController function called');
-//   const currentFrame = await animate();
-//   console.log(currentFrame)
-//   if(currentFrame === 200){
-//     console.log("paused!")
-//     mixerMap.set(mixer, false);
-//     await unpauseAnimation();
-//   }
-// }
-
 
 const scene = new THREE.Scene();
 
@@ -195,9 +180,21 @@ button.addEventListener('click', () => {
   loadModels(); 
 closeButton = document.querySelector('.close-button');
 closeButton.addEventListener('click', () => {
+  console.log("close button clicked")
   if (renderer.xr.getSession()) {
     renderer.xr.getSession().end();
   }
+    if (loadedModel) {
+      console.log("removing loaded model")
+      scene.remove(loadedModel);
+      loadedModel = null;
+    }
+  
+    if (bfly) {
+      console.log("removing butterflies")
+      scene.remove(bfly);
+      bfly = null;
+    }
 });
 });
 

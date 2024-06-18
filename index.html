@@ -4,144 +4,7 @@
    <meta charset="UTF-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
    <title>e-Subhalekha</title>
-   <style>
-       body {
-           animation: colorChange 10s infinite alternate;
-           padding: 0;
-           margin: 0;
-           overflow: hidden;
-       }
-
-       .pre-AR-screen {
-           width: 100%;
-           text-align: center;
-           position: absolute;
-           top: 40%;
-           display: flex;
-           flex-direction: column;
-           align-items: center;
-           justify-content: center;
-           left: 50%;
-           transform: translate(-50%, -50%);
-           animation: fadeInUp 2s ease-out;
-           z-index: 1;
-       }
-
-       @keyframes fadeInUp {
-           0% { opacity: 0; transform: translate(-50%, calc(-50% + 50px)); }
-           100% { opacity: 1; transform: translate(-50%, -50%); }
-       }
-
-       .ar-button {
-           font-family: 'Comic Sans MS', cursive;
-           background-color: #f0d637;
-           color: #fff;
-           border: none;
-           border-radius: 20px;
-           padding: 10px 20px;
-           cursor: pointer;
-           font-size: 18px;
-           transition: background-color 0.3s ease;
-           font-weight: bold;
-           animation: pulse 2s infinite;
-       }
-
-       @keyframes pulse {
-           0% { transform: scale(1); }
-           50% { transform: scale(1.1); }
-           100% { transform: scale(1); }
-       }
-
-       .ar-button:hover {
-           background-color: #f7e771;
-       }
-
-       .background-img {
-           position: fixed;
-           top: 0;
-           left: 0;
-           width: 100%;
-           height: 100%;
-           z-index: -1;
-           animation: zoomIn 5s ease-out;
-           background-image: url('/images/happy-holi-2.jpg');
-           background-size: contain;
-           background-position: center;
-       }
-
-       @keyframes zoomIn {
-           0% { transform: scale(1.5); }
-           100% { transform: scale(1); }
-       }
-
-       h1, p {
-           width: 100%;
-           color: rgb(0, 0, 0);
-           font-size: 3rem;
-           font-weight: 900;
-           text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-       }
-
-       .overlay-content {
-           position: fixed;
-           top: 0;
-           left: 0;
-           width: 100%;
-           height: 100%;
-           display: flex;
-           justify-content: center;
-           align-items: flex-end;
-           z-index: 2;
-       }
-
-       .overlay-container {
-           padding: 20px;
-           border-radius: 10px;
-           margin-bottom: 10%;
-       }
-       .close-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background-color: transparent;
-    border: none;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 3;
-    color: black;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-
-       #stabilization {
-        background-image: url(/public/stabilization.gif);
-        background-size: contain;
-        background-repeat: no-repeat;
-        width: 400px;
-        height: 400px;
-        position: absolute;
-        left: 50%;
-        top: 0;
-        transform: translate(-50%, 0);
-        z-index: 10;
-        display: none;
-    }
-
-    body.ar #stabilization {
-    display: block;
-    }
-
-    body.ar.stabilized #stabilization {
-    display: none;
-    }
-
-   </style>
+   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
    <img class="background-img" src="/images/happy-holi-2.jpg" alt="image not found">
@@ -158,7 +21,7 @@
    <div id="stabilization"></div>
 
    </div>
-   <!-- <script src="https://launchar.app/sdk/v1?key=SWCkbPxK4yeEwRt5ipkwNuMHfWOMzn2W&redirect=true"></script> -->
+   <script src="https://launchar.app/sdk/v1?key=SWCkbPxK4yeEwRt5ipkwNuMHfWOMzn2W&redirect=true"></script>
    <script type="module" src="scripts.js"></script>
 </body>
 </html>
