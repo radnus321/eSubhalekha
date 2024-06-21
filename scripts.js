@@ -3,6 +3,7 @@ import { ARButton } from 'three/examples/jsm/webxr/ARButton';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { gsap } from 'gsap';
+import { add } from 'three/examples/jsm/nodes/Nodes.js';
 
 let loadedModel = null;
 let bfly = null;
@@ -23,6 +24,17 @@ function toggleOverlayVisibility() {
   }
 }
 
+
+const applyVideoTexture = (mesh) => {
+  const video = document.getElementById('video');
+  video.setAttribute('playsinline', 'true');
+  const videoTexture = new THREE.VideoTexture(video);
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+  const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide});
+  mesh.material = material;
+}
+
 const loadModels = () => {
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('/draco/');
@@ -38,10 +50,14 @@ const loadModels = () => {
         bfly = gltf.scene;
         bfly.scale.set(0.3, 0.3, 0.3);
         bfly.rotation.set(0, Math.PI, 0);
-        bfly.position.set(0, -2, -3);
+        bfly.position.set(0, 0, -3);
         scene.add(bfly);
         mixer2 = new THREE.AnimationMixer(bfly);
         mixerMap.set(mixer2, true);
+        gltf.scene.traverse(function(child){
+          child.castShadow = true;
+          child.receiveShadow = true;
+        })
         gltf.animations.forEach((clip)=>{
           const action = mixer2.clipAction(clip) 
           action.play();     
@@ -57,9 +73,9 @@ const loadModels = () => {
       gltfLoader.load('/models/chest-3.glb', (gltf) => {
         document.body.classList.add('ar')
         loadedModel = gltf.scene;
-        loadedModel.scale.set(0.2, 0.2, 0.2);
+        loadedModel.scale.set(0.25, 0.25, 0.25);
         loadedModel.rotation.set(0, 0, 0);
-        loadedModel.position.set(0, -2, -2);
+        loadedModel.position.set(0, -1.92, -1.2);
         loadedModel.castShadow = true;
         loadedModel.receiveShadow = true;
         scene.add(loadedModel);
@@ -68,6 +84,14 @@ const loadModels = () => {
         loadedModel.name = "chest";
         mixer = new THREE.AnimationMixer(loadedModel);
         mixerMap.set(mixer, true);
+        gltf.scene.traverse(function(child){
+          console.log(child)
+          child.castShadow = true;
+          // child.receiveShadow = true;
+          // if(child.name == "Plane002"){
+          //   applyVideoTexture(child);
+          // }
+        })
         gltf.animations.forEach((clip) => {
           const action = mixer.clipAction(clip);
           action.setLoop(THREE.LoopOnce);
@@ -112,12 +136,14 @@ const unpauseAnimation = () => {
   overlayContainer.appendChild(unPauseButton);
 };
 
+
+
 async function animate() {
   currentFrame++;
   if(currentFrame === 150){
     console.log("mixer is paused!")
     mixerMap.set(mixer, false);
-    await unpauseAnimation();
+    unpauseAnimation();
   }
   if(mixer && mixerMap.get(mixer)) mixer.update(0.05);
   if(mixer2 && mixerMap.get(mixer2)) mixer2.update(0.05);
@@ -135,13 +161,12 @@ const sizes = {
 
 const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
-const pointLight = new THREE.PointLight(0xffffff, 1000);
-pointLight.position.set(5, 5, 5);
-pointLight.lookAt(0, 0, -2);
+const pointLight = new THREE.PointLight(0xffffff, 500);
+pointLight.position.set(3, 5, 5);
+pointLight.lookAt(0, -2, -2);
 pointLight.castShadow = true;
-pointLight.shadow.mapSize.width = 1024;
-pointLight.shadow.mapSize.height = 1024;
-pointLight.shadow.bias = -0.001;
+pointLight.shadow.mapSize.width = 2048;
+pointLight.shadow.mapSize.height = 2048;
 scene.add(pointLight);
 
 let reticle = new THREE.Mesh(
@@ -150,12 +175,38 @@ let reticle = new THREE.Mesh(
 );
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
-camera.position.set(0, 0, 5);
+camera.position.set(0, 0, 0);
 scene.add(camera);
+
+const addShadowPlane = () => {
+  const planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+  const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.25 });
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  plane.rotation.x = -Math.PI / 2;
+  plane.position.y = -2;
+  plane.position.x = 0;
+  plane.position.z = 0;
+  plane.receiveShadow = true;
+  scene.add(plane);
+}
+
+addShadowPlane();
+
+const loadVideo = () => {
+  const ele = document.querySelector('#video');
+  ele.innerHTML = '<source src="/Demon Slayer Compressed.mp4" type="video/mp4">';
+}
+
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true
+});
+
+renderer.domElement.addEventListener('touchmove', (event) => {
+  if (event.touches.length >= 2) {
+      event.preventDefault();
+  }
 });
 
 renderer.setSize(sizes.width, sizes.height);
@@ -177,19 +228,21 @@ button.style.animation = 'pulse 2s infinite';
 document.body.appendChild(button);
 
 button.addEventListener('click', () => {
-  loadModels(); 
-closeButton = document.querySelector('.close-button');
-closeButton.addEventListener('click', () => {
-  console.log("close button clicked")
-  if (renderer.xr.getSession()) {
-    renderer.xr.getSession().end();
-  }
+  loadModels();
+  // loadVideo();
+  // video.play();
+  closeButton = document.querySelector('.close-button');
+  closeButton.addEventListener('click', () => {
+    console.log("close button clicked")
+    if (renderer.xr.getSession()) {
+      renderer.xr.getSession().end();
+    }
     if (loadedModel) {
       console.log("removing loaded model")
       scene.remove(loadedModel);
       loadedModel = null;
     }
-  
+    
     if (bfly) {
       console.log("removing butterflies")
       scene.remove(bfly);
