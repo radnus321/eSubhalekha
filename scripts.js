@@ -9,9 +9,6 @@ let loadedModel = null;
 let bfly = null;
 let mixerMap = new Map();
 let mixer, mixer2;
-let animationPaused = false;
-let pauseTimeout;
-let unPauseButton = null;
 let closeButton = null;
 const overlayContainer = document.getElementById('overlay-content');
 let currentFrame = 0;
@@ -70,7 +67,7 @@ const loadModels = () => {
   
   const loadChest = async () => {
     return new Promise((resolve, reject) => {
-      gltfLoader.load('/models/chest-3.glb', (gltf) => {
+      gltfLoader.load('/models/hologram.glb', (gltf) => {
         document.body.classList.add('ar')
         loadedModel = gltf.scene;
         loadedModel.scale.set(0.25, 0.25, 0.25);
@@ -117,7 +114,7 @@ const unpauseAnimation = () => {
   console.log("unpausing animation");
   const overlayContainer = document.getElementById('overlay-content');
   const unPauseButton = document.createElement('button');
-  unPauseButton.textContent = 'Open Chest!';
+  unPauseButton.textContent = 'Reveal the secret!';
   unPauseButton.style.marginBottom = '80px';
   unPauseButton.style.backgroundColor = '#f0d637';
   unPauseButton.style.borderRadius = '20px';
@@ -176,6 +173,8 @@ let reticle = new THREE.Mesh(
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
 camera.position.set(0, 0, 0);
+const listener = new THREE.AudioListener();
+camera.add(listener);
 scene.add(camera);
 
 const addShadowPlane = () => {
@@ -191,6 +190,18 @@ const addShadowPlane = () => {
 }
 
 addShadowPlane();
+
+const ambience = new THREE.Audio(listener);
+
+const audioLoader = new THREE.AudioLoader();
+const loadAudio = () => {
+  audioLoader.load('/sounds/outside-amb.mp3', function(buffer) {
+    ambience.setBuffer(buffer);
+    ambience.setLoop(true);
+    ambience.setVolume(0.5);
+    ambience.play();
+  });
+}
 
 const loadVideo = () => {
   const ele = document.querySelector('#video');
@@ -231,6 +242,7 @@ button.addEventListener('click', () => {
   loadModels();
   // loadVideo();
   // video.play();
+  loadAudio();
   closeButton = document.querySelector('.close-button');
   closeButton.addEventListener('click', () => {
     console.log("close button clicked")
