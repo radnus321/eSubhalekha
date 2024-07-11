@@ -25,6 +25,7 @@ function toggleOverlayVisibility() {
 const applyVideoTexture = (mesh) => {
   const video = document.getElementById('video');
   video.setAttribute('playsinline', 'true');
+  video.muted = false;
   const videoTexture = new THREE.VideoTexture(video);
   videoTexture.minFilter = THREE.LinearFilter;
   videoTexture.magFilter = THREE.LinearFilter;
@@ -70,7 +71,7 @@ const loadModels = () => {
       gltfLoader.load('/models/hologram.glb', (gltf) => {
         document.body.classList.add('ar')
         loadedModel = gltf.scene;
-        loadedModel.scale.set(0.25, 0.25, 0.25);
+        loadedModel.scale.set(0.8, 0.8, 0.8);
         loadedModel.rotation.set(0, 0, 0);
         loadedModel.position.set(0, -1.92, -1.2);
         loadedModel.castShadow = true;
@@ -85,9 +86,10 @@ const loadModels = () => {
           console.log(child)
           child.castShadow = true;
           // child.receiveShadow = true;
-          // if(child.name == "Plane002"){
-          //   applyVideoTexture(child);
-          // }
+          if(child.name == "ProjectionPlane"){
+            applyVideoTexture(child);
+            child.y = -1 * child.y;
+          }
         })
         gltf.animations.forEach((clip) => {
           const action = mixer.clipAction(clip);
@@ -137,10 +139,14 @@ const unpauseAnimation = () => {
 
 async function animate() {
   currentFrame++;
-  if(currentFrame === 150){
+  if(currentFrame === 300){
     console.log("mixer is paused!")
     mixerMap.set(mixer, false);
     unpauseAnimation();
+  }
+  if(currentFrame === 450){
+    loadVideo();
+    video.play();    
   }
   if(mixer && mixerMap.get(mixer)) mixer.update(0.05);
   if(mixer2 && mixerMap.get(mixer2)) mixer2.update(0.05);
@@ -198,14 +204,14 @@ const loadAudio = () => {
   audioLoader.load('/sounds/outside-amb.mp3', function(buffer) {
     ambience.setBuffer(buffer);
     ambience.setLoop(true);
-    ambience.setVolume(0.5);
+    ambience.setVolume(0.3);
     ambience.play();
   });
 }
 
 const loadVideo = () => {
   const ele = document.querySelector('#video');
-  ele.innerHTML = '<source src="/Demon Slayer Compressed.mp4" type="video/mp4">';
+  ele.innerHTML = '<source src="/videos/wedding-video-flipped.mp4" type="video/mp4">';
 }
 
 
@@ -240,8 +246,6 @@ document.body.appendChild(button);
 
 button.addEventListener('click', () => {
   loadModels();
-  // loadVideo();
-  // video.play();
   loadAudio();
   closeButton = document.querySelector('.close-button');
   closeButton.addEventListener('click', () => {
